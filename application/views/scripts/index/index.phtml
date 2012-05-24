@@ -1,0 +1,41 @@
+<?php
+$config = Zend_Registry::get('config');
+?>
+
+<script type="text/javascript" src="/js/game.js"></script>
+<script type="text/javascript" src="/js/board_uk.js"></script>
+
+<script>
+//Game.init();
+</script>
+
+<?php
+$session = new Zend_Session_Namespace('game');
+?>
+<p>Player number: <input id="player_num" value="<?php echo $session->player->player_num; ?>" />
+
+
+<p><a href="javascript:Game.start();">Start</a></p>
+
+<p><a href="javascript:Game.rollDice();">Roll Dice</a></p>
+
+<p><a href="javascript:Game.buyProperty();">Buy Property</a></p>
+
+<p><a href="javascript:Game.endTurn();">End Turn</a></p>
+
+<table class="info" border="1">
+	<tr>
+		<td></td>
+		<td class="player_name_0">Player 1</td>
+		<td class="player_name_1">Player 2</td>
+		<td class="player_name_2">Player 3</td>
+	</tr>
+	<tr>
+		<td>On:</td>
+		<td class="p0_on"></td>
+		<td class="p1_on"></td>
+		<td class="p2_on"></td>
+	</tr>
+</table>
+
+<pre id="debug"></pre>
