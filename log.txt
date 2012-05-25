@@ -1,0 +1,1 @@
+[{"cmd":"game_start"},{"cmd":"player_to_start","params":"0"}]
