@@ -33,8 +33,7 @@ class AjaxController extends Zend_Controller_Action {
     		echo "command not good";
     	}
     	else {
-    		echo "YAY!";
-    		var_dump($this->game);
+    		var_dump($this->game->getLog());
     	}
     }
 

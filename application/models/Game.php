@@ -34,6 +34,8 @@ class Model_Game {
 		'cchest_index' => 0
 	);
 
+	protected $last_roll = 0;
+
 	protected $players = array();
 	protected $players_playing = 0;
 
@@ -79,34 +81,17 @@ class Model_Game {
 	protected function init() {
 		$this->players_playing = 3;
 
-		$this->players[] = new stdClass();
+		$this->players[] = new Model_Player();
 		$this->players[0]->id = 1;
 		$this->players[0]->name = "Fred";
-		$this->players[0]->position = 0;
-		$this->players[0]->playing = true;
-		$this->players[0]->in_jail = false;
-		$this->players[0]->jail_roll_count = 0;
-		$this->players[0]->previous_doubles = array(false, false);
 
-		$this->players[] = new stdClass();
+		$this->players[] = new Model_Player();
 		$this->players[1]->id = 2;
 		$this->players[1]->name = "John";
-		$this->players[1]->position = 0;
-		$this->players[1]->playing = true;
-		$this->players[1]->in_jail = false;
-		$this->players[1]->jail_roll_count = 0;
-		$this->players[1]->previous_doubles = array(false, false);
 
-		$this->players[] = new stdClass();
+		$this->players[] = new Model_Player();
 		$this->players[2]->id = 3;
 		$this->players[2]->name = "Emily";
-		$this->players[2]->position = 0;
-		$this->players[2]->playing = true;
-		$this->players[2]->in_jail = false;
-		$this->players[2]->jail_roll_count = 0;
-		$this->players[2]->previous_doubles = array(false, false);
-
-		//$p1 = $this->addPlayer(346, "Fred", 1);
 
 		for ($i = 0; $i <= Model_Game::MAX_POSITIONS; $i++) {
 			if ($this->board->isPurchasable($i)) {
@@ -120,10 +105,10 @@ class Model_Game {
 
 		// init community chest + chance indexes
 		for ($i = 0; $i < self::NUM_CCHEST_CARDS; $i++) {
-			$this->cards['cchest'][$i] = $i;
+			$this->cards['cchest'][] = $i;
 		}
 		for ($i = 0; $i < self::NUM_CHANCE_CARDS; $i++) {
-			$this->cards['chance'][$i] = $i;
+			$this->cards['chance'][] = $i;
 		}
 
 		shuffle($this->cards['cchest']);
@@ -146,12 +131,23 @@ class Model_Game {
 		'trade', 'end_turn', 'quit'
 		 *
 		 */
+
+		if ($command == 'new_game') {
+			file_put_contents($this->log_file, '');
+			file_put_contents($this->state_file, '');
+			echo "DONE";
+			exit;
+		}
+
 		if ($this->commandIsValid($command, $player)) {
 
 			switch ($command) {
 				case 'roll_dice':
 					$dice1 = $this->rollDice();
 					$dice2 = $this->rollDice();
+
+					$dice1 = 3;
+					$dice2 = 4;
 
 					$this->log($command, $player, $dice1, $dice2);
 
@@ -309,9 +305,15 @@ class Model_Game {
 		$args = func_get_args();
 		array_shift($args);
 
-		$log['params'] = implode(',', $args);
+		if (func_num_args() > 1) {
+			$log['params'] = implode(',', $args);
+		}
 		//$log["turn_count"] = $this->turn_count;
 		$this->log[] = $log;
+	}
+
+	public function getLog() {
+		return $this->log;
 	}
 
 	protected function saveState() {
@@ -321,6 +323,7 @@ class Model_Game {
 		$state->turn_count = $this->turn_count;
 		$state->players = $this->players;
 		$state->properties = $this->properties;
+		$state->cards = $this->cards;
 
 		file_put_contents($this->state_file, serialize($state));
 		file_put_contents($this->log_file, json_encode($this->log));
@@ -328,6 +331,7 @@ class Model_Game {
 
 	protected function loadState() {
 		$state = unserialize(file_get_contents($this->state_file));
+		$log = json_decode(file_get_contents($this->log_file));
 
 		if ($state) {
 			$this->player_turn = $state->player_turn;
@@ -335,6 +339,11 @@ class Model_Game {
 			$this->turn_count = $state->turn_count;
 			$this->players = $state->players;
 			$this->properties = $state->properties;
+			$this->cards = $state->cards;
+		}
+
+		if ($log) {
+			$this->log = $log;
 		}
 	}
 
@@ -369,12 +378,29 @@ class Model_Game {
 		$this->players[$player]->position = $new_position;
 	}
 
+	public function movePlayerTo($player, $to) {
+		$this->players[$player]->position = $to;
+	}
+
 	/**
 	 * Utility function - get player object from state
 	 * @param int $player
 	 */
-	protected function getPlayer($player) {
+	public function getPlayer($player) {
 		return $this->players[$player];
+	}
+
+	public function whoOwns($position) {
+		return $this->properties[$position]->owner;
+	}
+
+	public function getLastRoll() {
+		return $this->last_roll;
+	}
+
+	public function calcRentDue($position) {
+		return 100;
+		//TODO;
 	}
 
 	/**
@@ -396,6 +422,11 @@ class Model_Game {
 	}
 
 	protected function drawChanceCard($player) {
+		$card = $this->cards['chance'][$this->cards['chance_index']];
+
+		$this->log("draw_card", "chance", $this->cards['chance_index']);
+
+		$this->board->drawCard(self::CARD_CHANCE, $card, $player, $this);
 		$this->cards['chance_index'] = ($this->cards['chance_index'] + 1) % self::NUM_CHANCE_CARDS;
 	}
 
@@ -432,7 +463,7 @@ class Model_Game {
 	 * @param int $owner
 	 * @param int $rent_due
 	 */
-	protected function playerPayRent($player, $owner, $rent) {
+	public function playerPayRent($player, $owner, $rent) {
 		$this->log("player_pay_rent", $player, $rent);
 
 		$this->players[$player]->cash -= $rent;
@@ -454,17 +485,8 @@ class Model_Game {
 		}
 	}
 
-	protected function calcRentDue($position) {
-		return 100;
-		//TODO;
-	}
-
 	protected function playerLost($player) {
 		$this->log("player_lost", $player);
-	}
-
-	protected function whoOwns($position) {
-		return $this->properties[$position]->owner;
 	}
 
 	protected function nextPlayerTurn() {

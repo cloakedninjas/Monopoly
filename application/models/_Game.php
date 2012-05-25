@@ -69,9 +69,8 @@ class Model_Game {
 		return $this->whatNext();
 	}
 
-	public function passedGo() {
-		$current_player = $this->getCurrentPlayer();
-		$this->state->players[$current_player]->money += 200;
+	public function passedGo($player) {
+		$this->state->players[$player]->money += 200;
 		$this->log("player_passed_go");
 	}
 

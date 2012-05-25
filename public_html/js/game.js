@@ -23,6 +23,11 @@ var Game = {
 		this.sendCommand('end_turn');
 	},
 
+	newGame: function() {
+		// DEBUG only command
+		this.sendCommand('new_game');
+	},
+
 	handleGameState: function(data) {
 		this.state = data;
 		Game.toPrettyState();
@@ -43,7 +48,7 @@ var Game = {
 				$("#debug").html(data);
 			},
 			error: function(a,b,c) {
-				$("#debug").html(b + c);
+				$("#debug").html(c);
 			}
 		});
 	}
