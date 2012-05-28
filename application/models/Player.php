@@ -10,5 +10,6 @@ class Model_Player {
 		$this->in_jail = false;
 		$this->jail_roll_count = 0;
 		$this->previous_doubles = array(false, false);
+		$this->goojf_count = 0;
 	}
 }

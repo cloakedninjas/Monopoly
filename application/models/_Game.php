@@ -1,5 +1,5 @@
 <?php
-class Model_Game {
+class Model_Game_Old {
 
 	//protected $_dbTableName = 'items';
 

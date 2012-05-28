@@ -28,11 +28,19 @@ class Model_Game {
 	);
 
 	protected $cards = array(
-		'chance' => array(),
-		'cchest' => array(),
-		'chance_index' => 0,
-		'cchest_index' => 0
+		self::CARD_COMMUNITY_CHEST => array(),
+		self::CARD_CHANCE => array()
 	);
+
+	protected $card_index = array(
+		self::CARD_COMMUNITY_CHEST => 0,
+		self::CARD_CHANCE => 0
+	);
+
+	/**
+	 * @var Model_Board
+	 */
+	protected $board;
 
 	protected $last_roll = 0;
 
@@ -105,14 +113,14 @@ class Model_Game {
 
 		// init community chest + chance indexes
 		for ($i = 0; $i < self::NUM_CCHEST_CARDS; $i++) {
-			$this->cards['cchest'][] = $i;
+			$this->cards[self::CARD_COMMUNITY_CHEST][] = $i;
 		}
 		for ($i = 0; $i < self::NUM_CHANCE_CARDS; $i++) {
-			$this->cards['chance'][] = $i;
+			$this->cards[self::CARD_CHANCE][] = $i;
 		}
 
-		shuffle($this->cards['cchest']);
-		shuffle($this->cards['chance']);
+		shuffle($this->cards[self::CARD_COMMUNITY_CHEST]);
+		shuffle($this->cards[self::CARD_CHANCE]);
 	}
 
 	/**
@@ -149,6 +157,8 @@ class Model_Game {
 					$dice1 = 3;
 					$dice2 = 4;
 
+					$this->last_roll = $dice1 + $dice2;
+
 					$this->log($command, $player, $dice1, $dice2);
 
 					// check for doubles
@@ -164,7 +174,7 @@ class Model_Game {
 						$this->players[$player]->previous_doubles[0] = $double;
 					}
 
-					$this->movePlayer($dice1 + $dice2, $player);
+					$this->movePlayer($this->last_roll, $player);
 					$this->turn_stage = self::TSTAGE_POST_ROLL;
 
 					// what did they land on, what should happen next?
@@ -236,12 +246,13 @@ class Model_Game {
 
 
 		if ($this->board->isCommunityChest($position)) {
-			$this->drawComunityChestCard($player);
+			$this->drawCard(self::CARD_COMMUNITY_CHEST, $player);
 		}
 		elseif ($this->board->isChance($position)) {
-			$this->drawChanceCard($player);
+			$this->drawCard(self::CARD_CHANCE, $player);
 		}
-			// Income Tax
+
+		// Income Tax
 		elseif ($position == Model_Board::POSITION_INCOME_TAX) {
 			$taxable = $this->getNetWorthOf($player);
 
@@ -330,10 +341,14 @@ class Model_Game {
 	}
 
 	protected function loadState() {
-		$state = unserialize(file_get_contents($this->state_file));
-		$log = json_decode(file_get_contents($this->log_file));
+		if (file_exists($this->state_file)) {
+			$state = unserialize(file_get_contents($this->state_file));
+		}
+		if (file_exists($this->log_file)) {
+			$log = json_decode(file_get_contents($this->log_file));
+		}
 
-		if ($state) {
+		if (isset($state)) {
 			$this->player_turn = $state->player_turn;
 			$this->turn_stage = $state->turn_stage;
 			$this->turn_count = $state->turn_count;
@@ -342,7 +357,7 @@ class Model_Game {
 			$this->cards = $state->cards;
 		}
 
-		if ($log) {
+		if (isset($log)) {
 			$this->log = $log;
 		}
 	}
@@ -380,6 +395,7 @@ class Model_Game {
 
 	public function movePlayerTo($player, $to) {
 		$this->players[$player]->position = $to;
+		$this->log("move_player", $player, $to);
 	}
 
 	/**
@@ -388,6 +404,19 @@ class Model_Game {
 	 */
 	public function getPlayer($player) {
 		return $this->players[$player];
+	}
+
+	/**
+	 * Returns an array of player indexes
+	 */
+	public function getPlayersPlaying() {
+		$playing = array();
+		foreach ($this->players as $i=>$p) {
+			if ($p->playing) {
+				$playing[] = $i;
+			}
+		}
+		return $playing;
 	}
 
 	public function whoOwns($position) {
@@ -399,35 +428,145 @@ class Model_Game {
 	}
 
 	public function calcRentDue($position) {
-		return 100;
-		//TODO;
+		$owner = $this->properties[$position]->owner;
+		if ($owner !== false) {
+			if ($position == Model_Board::POSITION_STATION_1 || $position == Model_Board::POSITION_STATION_2 || $position == Model_Board::POSITION_STATION_3 || $position == Model_Board::POSITION_STATION_4) {
+				// stations
+				$count = 0;
+				if ($this->whoOwns(Model_Board::POSITION_STATION_1) == $owner) {
+					$count++;
+				}
+				if ($this->whoOwns(Model_Board::POSITION_STATION_2) == $owner) {
+					$count++;
+				}
+				if ($this->whoOwns(Model_Board::POSITION_STATION_3) == $owner) {
+					$count++;
+				}
+				if ($this->whoOwns(Model_Board::POSITION_STATION_4) == $owner) {
+					$count++;
+				}
+
+				if ($count == 4) {
+					return 200;
+				}
+				elseif ($count == 3) {
+					return 100;
+				}
+				elseif ($count == 2) {
+					return 50;
+				}
+				else {
+					return 25;
+				}
+			}
+			elseif ($position == Model_Board::POSITION_ELECTRIC_COMPANY || $position == Model_Board::POSITION_WATER_WORKS) {
+				// utilities
+				$count = 0;
+				if ($this->whoOwns(Model_Board::POSITION_ELECTRIC_COMPANY) == $owner) {
+					$count++;
+				}
+				if ($this->whoOwns(Model_Board::POSITION_WATER_WORKS) == $owner) {
+					$count++;
+				}
+
+				if ($count == 2) {
+					return $this->last_roll * 10;
+				}
+				else {
+					return $this->last_roll * 4;
+				}
+			}
+			else {
+				// normal properties
+				if ($this->properties[$position]->mortgaged) {
+					return 0;
+				}
+
+				if ($this->properties[$position]->houses == 0 && $this->properties[$position]->hotels == 0) {
+					$base = $this->board->getBaseRent($position);
+
+					$properties = $this->board->getPropertiesOfColourGroup($this->board->getColourGroup($position));
+
+					// assume owner controls all of that colour group
+					$owns_all = true;
+
+					foreach ($properties as $p) {
+						if ($this->properties[$p]->owner != $owner) {
+							$owns_all = false;
+							break;
+						}
+					}
+
+					if ($owns_all) {
+						return $base * 2;
+					}
+
+					return $base;
+				}
+
+				$rent = 0;
+				if ($this->properties[$position]->hotels > 0) {
+					$rent = $this->board->getRentWithHotel($position, $this->properties[$position]->hotels);
+				}
+				if ($this->properties[$position]->houses > 0) {
+					$rent += $this->board->getRentWithHouse($position, $this->properties[$position]->houses);
+				}
+
+				return $rent;
+			}
+		}
+		return 0;
+	}
+
+	public function givePlayerCash($player, $cash) {
+		$this->players[$player]->cash += $cash;
+		$this->log("player_get_cash", $player, $cash);
+	}
+
+	public function giveGoojfCard($player) {
+		$this->players[$player]->goojf_count++;
+		$this->log("player_get_goojf_card", $player);
+	}
+
+	public function getHouseCountForPlayer($player) {
+		$count = 0;
+
+		foreach ($this->properties as $p) {
+			if ($p->owner == $player) {
+				$count += $p->houses;
+			}
+		}
+		return $count;
+	}
+
+	public function getHotelCountForPlayer($player) {
+		$count = 0;
+
+		foreach ($this->properties as $p) {
+			if ($p->owner == $player) {
+				$count += $p->hotels;
+			}
+		}
+		return $count;
 	}
 
 	/**
 	 * Player has passed go
 	 * @param int $player
 	 */
-	protected function playerPassedGo($player) {
+	public function playerPassedGo($player) {
 		$this->log("passed_go", $player);
 		$this->players[$player]->money += self::GO_MONEY;
 	}
 
-	protected function drawComunityChestCard($player) {
-		// increment index
-		$this->cards['cchest_index'] = ($this->cards['cchest_index'] + 1) % self::NUM_CCHEST_CARDS;
+	protected function drawCard($type, $player) {
 
-		// TODO
-		// erm lookup card by ID - do stuff...
+		$card = $this->cards[$type][$this->card_index[$type]];
 
-	}
+		$this->log("draw_card", $type, $card);
 
-	protected function drawChanceCard($player) {
-		$card = $this->cards['chance'][$this->cards['chance_index']];
-
-		$this->log("draw_card", "chance", $this->cards['chance_index']);
-
-		$this->board->drawCard(self::CARD_CHANCE, $card, $player, $this);
-		$this->cards['chance_index'] = ($this->cards['chance_index'] + 1) % self::NUM_CHANCE_CARDS;
+		$this->board->drawCard($type, $card, $player, $this);
+		$this->card_index[$type] = ($this->card_index[$type] + 1) % count($this->cards[$type]);
 	}
 
 	protected function getNetWorthOf($player) {
@@ -435,7 +574,7 @@ class Model_Game {
 		return 5;
 	}
 
-	protected function playerPayTax($player, $tax) {
+	public function playerPayTax($player, $tax) {
 		$this->log("player_pay_tax", $player, $tax);
 
 		$this->players[$player]->cash -= $tax;
@@ -458,30 +597,72 @@ class Model_Game {
 	}
 
 	/**
-	 * Player owes rent to property owner
-	 * @param int $player
-	 * @param int $owner
-	 * @param int $rent_due
+	 * Player owes rent to another player
+	 * @param int $from
+	 * @param int $to
+	 * @param int $amount
 	 */
-	public function playerPayRent($player, $owner, $rent) {
-		$this->log("player_pay_rent", $player, $rent);
+	public function playerPayRent($from, $to, $amount) {
+		$this->log("player_pay_rent", $from, $amount);
 
-		$this->players[$player]->cash -= $rent;
+		$from_cash = $this->players[$from]->cash;
 
-		if ($this->players[$player]->cash < 0) {
-			// does this player have enough to cover debt
-			$networth = $this->getNetWorthOf($player);
-			$remainder = abs($this->players[$player]->cash);
+		if ($from_cash >= $amount) {
+			// amount fully covered in cash
+			$this->players[$from]->cash -= $amount;
+			$this->players[$to]->cash += $amount;
+			return;
+		}
 
-			if ($networth >= $remainder) {
-				// has enough money, player will need to find funds
-				$this->log("player_in_debt", $player);
-			}
-			else {
-				$this->playerLost($player);
-				// turn over all properties to $owner
-				//TODO
-			}
+		$this->players[$from]->cash -= $amount;
+		$this->players[$to]->cash += $from_cash; // hand all money over
+
+		// does this player have enough to cover debt
+		$networth = $this->getNetWorthOf($from);
+		$remainder = abs($this->players[$from]->cash);
+
+		if ($networth >= $remainder) {
+			// has enough money, player will need to find funds
+			$this->log("player_in_debt", $from);
+		}
+		else {
+			$this->playerLost($from);
+			// turn over all properties to $owner
+			//TODO
+		}
+	}
+
+	/**
+	 * Player owes money to another player
+	 * @param int $from
+	 * @param int $to
+	 * @param int $amount
+	 */
+	public function playerPayPlayer($from, $to, $amount) {
+		$this->log("player_pay_player", $from, $amount);
+
+		$from_cash = $this->players[$from]->cash;
+
+		if ($from_cash >= $amount) {
+			// amount fully covered in cash
+			$this->players[$from]->cash -= $amount;
+			$this->players[$to]->cash += $amount;
+			return;
+		}
+
+		$this->players[$from]->cash -= $amount;
+		$this->players[$to]->cash += $from_cash; // hand all money over
+
+		// does this player have enough to cover debt
+		$networth = $this->getNetWorthOf($from);
+		$remainder = abs($this->players[$from]->cash);
+
+		if ($networth >= $remainder) {
+			// has enough money, player will need to find funds
+			$this->log("player_in_debt", $from);
+		}
+		else {
+			$this->playerLost($from);
 		}
 	}
 
@@ -523,7 +704,7 @@ class Model_Game {
 		}
 	}
 
-	protected function sendToJail($player) {
+	public function sendPlayerToJail($player) {
 		$this->log("player_in_jail", $player);
 		$this->movePlayerTo($player, Model_Board::POSITION_JAIL);
 		$this->players[$player]->in_jail = true;
