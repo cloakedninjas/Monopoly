@@ -243,8 +243,6 @@ class Model_Game {
 	}
 
 	protected function playerLandedOnSpace($player, $position) {
-
-
 		if ($this->board->isCommunityChest($position)) {
 			$this->drawCard(self::CARD_COMMUNITY_CHEST, $player);
 		}
@@ -348,7 +346,7 @@ class Model_Game {
 			$log = json_decode(file_get_contents($this->log_file));
 		}
 
-		if (isset($state)) {
+		if (isset($state) && $state != '') {
 			$this->player_turn = $state->player_turn;
 			$this->turn_stage = $state->turn_stage;
 			$this->turn_count = $state->turn_count;
@@ -357,7 +355,7 @@ class Model_Game {
 			$this->cards = $state->cards;
 		}
 
-		if (isset($log)) {
+		if (isset($log) && $log != '') {
 			$this->log = $log;
 		}
 	}
@@ -393,9 +391,13 @@ class Model_Game {
 		$this->players[$player]->position = $new_position;
 	}
 
-	public function movePlayerTo($player, $to) {
+	public function movePlayerTo($player, $to, $ignore_land=false) {
 		$this->players[$player]->position = $to;
 		$this->log("move_player", $player, $to);
+
+		if (!$ignore_land) {
+			$this->playerLandedOnSpace($player, $to);
+		}
 	}
 
 	/**

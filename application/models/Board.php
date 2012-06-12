@@ -32,6 +32,10 @@ class Model_Board {
 
 	const POSITION_MAYFAIR = 39;
 
+	const POSITION_CHANCE_1 = 7;
+	const POSITION_CHANCE_2 = 22;
+	const POSITION_CHANCE_3 = 36;
+
 	const COL_GROUP_BROWN = 0;
 	const COL_GROUP_BLUE = 1;
 	const COL_GROUP_PINK = 2;
@@ -188,16 +192,18 @@ class Model_Board {
 					//If unowned, you may buy it from the Bank.
 					//If owned, throw dice and pay owner a total ten times the amount thrown.
 
-					if ($game->getPlayer($player)->position > self::POSITION_WATER_WORKS || $game->getPlayer($player)->position < self::POSITION_ELECTRIC_COMPANY) {
+					if ($game->getPlayer($player)->position == self::POSITION_CHANCE_1) {
+						$landed_on = self::POSITION_ELECTRIC_COMPANY;
+					}
+					elseif ($game->getPlayer($player)->position == self::POSITION_CHANCE_2) {
+						$landed_on = self::POSITION_WATER_WORKS;
+					}
+					else {
 						$game->playerPassedGo($player);
 						$landed_on = self::POSITION_ELECTRIC_COMPANY;
 					}
-					else {
-						$game->movePlayerTo($player, self::POSITION_WATER_WORKS);
-						$landed_on = self::POSITION_WATER_WORKS;
-					}
 
-					$game->movePlayerTo($player, $landed_on);
+					$game->movePlayerTo($player, $landed_on, true);
 					$owner = $game->whoOwns($landed_on);
 
 					if ($owner !== false) {
@@ -212,21 +218,18 @@ class Model_Board {
 					//Advance token to the nearest Railroad and pay owner twice the rental to which he/she is otherwise entitled.
 					//If Railroad is unowned, you may buy it from the Bank.
 
-					if ($game->getPlayer($player)->position > self::POSITION_STATION_4) {
-						$game->playerPassedGo($player);
-						$landed_on = self::POSITION_STATION_1;
+					if ($game->getPlayer($player)->position == self::POSITION_CHANCE_1) {
+						$landed_on = self::POSITION_STATION_2;
 					}
-					elseif ($game->getPlayer($player)->position > self::POSITION_STATION_3) {
-						$landed_on = self::POSITION_STATION_4;
-					}
-					elseif ($game->getPlayer($player)->position > self::POSITION_STATION_2) {
+					elseif ($game->getPlayer($player)->position == self::POSITION_CHANCE_2) {
 						$landed_on = self::POSITION_STATION_3;
 					}
 					else {
+						$game->playerPassedGo($player);
 						$landed_on = self::POSITION_STATION_1;
 					}
 
-					$game->movePlayerTo($player, $landed_on);
+					$game->movePlayerTo($player, $landed_on, true);
 					$due = $game->calcRentDue($landed_on) * 2;
 
 					if ($due > 0) {
@@ -287,10 +290,7 @@ class Model_Board {
 
 				case 12:
 					//Take a trip to Reading Railroad – if you pass Go, collect $200
-					if ($game->getPlayer($player)->position > self::POSITION_STATION_1) {
-						$game->playerPassedGo($player);
-					}
-
+					$game->playerPassedGo($player); // you HAVE to pass Go to get there
 					$game->movePlayerTo($player, self::POSITION_STATION_1);
 					break;
 
