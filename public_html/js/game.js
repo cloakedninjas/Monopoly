@@ -19,6 +19,10 @@ var Game = {
 		this.sendCommand('buy_property');
 	},
 
+	useGOOJFCard: function() {
+		this.sendCommand('use_goojf');
+	},
+
 	endTurn: function() {
 		this.sendCommand('end_turn');
 	},

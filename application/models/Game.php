@@ -14,6 +14,8 @@ class Model_Game {
 
 	const GO_MONEY = 200;
 
+	const JAIL_ROLL_FORCE_FINE = 3;
+
 	// action log
 	protected $log = array();
 	protected $log_file = "C:/www2/monopoly/log.txt";
@@ -87,7 +89,7 @@ class Model_Game {
 
 
 	protected function init() {
-		$this->players_playing = 3;
+		$this->players_playing = 2; //3
 
 		$this->players[] = new Model_Player();
 		$this->players[0]->id = 1;
@@ -97,9 +99,9 @@ class Model_Game {
 		$this->players[1]->id = 2;
 		$this->players[1]->name = "John";
 
-		$this->players[] = new Model_Player();
-		$this->players[2]->id = 3;
-		$this->players[2]->name = "Emily";
+		//$this->players[] = new Model_Player();
+		//$this->players[2]->id = 3;
+		//$this->players[2]->name = "Emily";
 
 		for ($i = 0; $i <= Model_Game::MAX_POSITIONS; $i++) {
 			if ($this->board->isPurchasable($i)) {
@@ -153,39 +155,69 @@ class Model_Game {
 				case 'roll_dice':
 					$dice1 = $this->rollDice();
 					$dice2 = $this->rollDice();
-
-					$dice1 = 3;
-					$dice2 = 4;
-
+					$this->log($command, $player, $dice1, $dice2);
 					$this->last_roll = $dice1 + $dice2;
 
-					$this->log($command, $player, $dice1, $dice2);
+					$just_released_from_jail = false;
 
-					// check for doubles
-					$double = $dice1 == $dice2;
+					if ($this->players[$player]->in_jail) {
 
-					if ($double && $this->players[$player]->previous_doubles[0] && $this->players[$player]->previous_doubles[1]) {
-						// 3 doubles in a row
-						$this->sendToJail($player);
+						if ($dice1 == $dice2) {
+							// get out of jail
+							$this->players[$player]->in_jail = false;
+							$just_released_from_jail = true;
+						}
+						else {
+							$this->players[$player]->jail_roll_count++;
+
+							if ($this->players[$player]->jail_roll_count == self::JAIL_ROLL_FORCE_FINE) {
+								$this->playerPayTax($player, 50);
+								$this->players[$player]->in_jail = false;
+								$just_released_from_jail = true;
+							}
+						}
+					}
+
+					if (!$this->players[$player]->in_jail) {
+						if (!$just_released_from_jail) {
+							// check for doubles
+							$double = $dice1 == $dice2;
+
+							if ($double && $this->players[$player]->previous_doubles[0] && $this->players[$player]->previous_doubles[1]) {
+								// 3 doubles in a row
+								$this->sendToJail($player);
+								break;
+							}
+							else {
+								$this->players[$player]->previous_doubles[1] = $this->players[$player]->previous_doubles[0];
+								$this->players[$player]->previous_doubles[0] = $double;
+							}
+						}
+
+						$this->movePlayer($this->last_roll, $player);
+						$this->turn_stage = self::TSTAGE_POST_ROLL;
+
+						// what did they land on, what should happen next?
+						$this->playerLandedOnSpace($player, $this->players[$player]->position);
 						break;
 					}
-					else {
-						$this->players[$player]->previous_doubles[1] = $this->players[$player]->previous_doubles[0];
-						$this->players[$player]->previous_doubles[0] = $double;
-					}
-
-					$this->movePlayer($this->last_roll, $player);
-					$this->turn_stage = self::TSTAGE_POST_ROLL;
-
-					// what did they land on, what should happen next?
-					$this->playerLandedOnSpace($player, $this->players[$player]->position);
-					break;
 
 				case 'buy_property':
 					$this->playerBuyProperty($player, $this->players[$player]->position);
 					break;
 
 				case 'pass_property':
+					break;
+
+				case 'use_goojf':
+					$this->players[$player]->in_jail = false;
+
+					$this->movePlayer($this->last_roll, $player);
+					$this->turn_stage = self::TSTAGE_POST_ROLL;
+
+					// what did they land on, what should happen next?
+					$this->playerLandedOnSpace($player, $this->players[$player]->position);
+
 					break;
 
 				case 'end_turn':
@@ -223,7 +255,9 @@ class Model_Game {
 		}
 
 		if ($this->players[$player]->in_jail) {
-			return $command == 'roll_dice';
+			if ($command == 'roll_dice' || $command == 'use_goojf' || $command == 'build_building' || $command == 'mortage' || $command == 'unmortgage' || $command == 'sell_building' || $command == 'trade') {
+				return true;
+			}
 		}
 
 		switch ($this->turn_stage) {
@@ -233,6 +267,12 @@ class Model_Game {
 				}
 				break;
 			case self::TSTAGE_POST_ROLL:
+				if ($this->players[$player]->previous_doubles[0]) {
+					if ($command == 'end_turn') {
+						// player cannot end go if they rolled double last time
+						return false;
+					}
+				}
 				if ($command == 'buy_property' || $command == 'pass_property' || $command == 'build_building' || $command == 'mortage' || $command == 'unmortgage'  || $command == 'sell_building' || $command == 'trade' || $command == 'end_turn') {
 					return true;
 				}
@@ -243,6 +283,8 @@ class Model_Game {
 	}
 
 	protected function playerLandedOnSpace($player, $position) {
+		$this->log("player_landed_on", $player, $position);
+
 		if ($this->board->isCommunityChest($position)) {
 			$this->drawCard(self::CARD_COMMUNITY_CHEST, $player);
 		}
@@ -330,9 +372,12 @@ class Model_Game {
 		$state->player_turn = $this->player_turn;
 		$state->turn_stage = $this->turn_stage;
 		$state->turn_count = $this->turn_count;
+		$state->last_roll = $this->last_roll;
 		$state->players = $this->players;
+		$state->players_playing = $this->players_playing;
 		$state->properties = $this->properties;
 		$state->cards = $this->cards;
+		$state->card_index = $this->card_index;
 
 		file_put_contents($this->state_file, serialize($state));
 		file_put_contents($this->log_file, json_encode($this->log));
@@ -350,9 +395,12 @@ class Model_Game {
 			$this->player_turn = $state->player_turn;
 			$this->turn_stage = $state->turn_stage;
 			$this->turn_count = $state->turn_count;
+			$this->last_roll = $state->last_roll;
 			$this->players = $state->players;
+			$this->players_playing = $state->players_playing;
 			$this->properties = $state->properties;
 			$this->cards = $state->cards;
+			$this->card_index = $state->card_index;
 		}
 
 		if (isset($log) && $log != '') {
@@ -562,13 +610,15 @@ class Model_Game {
 	}
 
 	protected function drawCard($type, $player) {
-
-		$card = $this->cards[$type][$this->card_index[$type]];
+		$index = $this->card_index[$type];
+		$card = $this->cards[$type][$index];
 
 		$this->log("draw_card", $type, $card);
 
 		$this->board->drawCard($type, $card, $player, $this);
-		$this->card_index[$type] = ($this->card_index[$type] + 1) % count($this->cards[$type]);
+
+		$index = ($index + 1) % count($this->cards[$type]);
+		$this->card_index[$type] = $index;
 	}
 
 	protected function getNetWorthOf($player) {
@@ -685,6 +735,7 @@ class Model_Game {
 				if ($this->players[$index]->playing) {
 					$player_found = true;
 					$next_player = $index;
+					break;
 				}
 				else {
 					$index++;
@@ -698,6 +749,7 @@ class Model_Game {
 
 		if ($player_found) {
 			$this->player_turn = $next_player;
+			$this->turn_stage = self::TSTAGE_PRE_ROLL;
 			$this->log("start_turn", $this->player_turn);
 		}
 		else {
