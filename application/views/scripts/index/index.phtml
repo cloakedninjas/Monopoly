@@ -23,20 +23,35 @@ $session = new Zend_Session_Namespace('game');
 
 <p><a href="javascript:Game.sendCommand('end_turn');">End Turn</a></p>
 
-<p><a href="javascript:Game.sendCommand('new_game');">New Game</a></p>
+<table class="info" border="1">
+	<tr>
+		<th>Dice 1</th>
+		<th>Dice 2</th>
+	</tr>
+	<tr>
+		<td class="dice1">&nbsp;</td>
+		<td class="dice2"></td>
+	</tr>
+</table>
 
 <table class="info" border="1">
 	<tr>
-		<td></td>
-		<td class="player_name_0">Player 1</td>
-		<td class="player_name_1">Player 2</td>
-		<td class="player_name_2">Player 3</td>
+		<th></th>
+		<th class="player_name_0">Player 1</th>
+		<th class="player_name_1">Player 2</th>
+		<th class="player_name_2">Player 3</th>
 	</tr>
 	<tr>
 		<td>On:</td>
 		<td class="p0_on"></td>
 		<td class="p1_on"></td>
 		<td class="p2_on"></td>
+	</tr>
+	<tr>
+		<td>Cash:</td>
+		<td class="p0_cash"></td>
+		<td class="p1_cash"></td>
+		<td class="p2_cash"></td>
 	</tr>
 </table>
 

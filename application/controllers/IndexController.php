@@ -20,8 +20,10 @@ class IndexController extends Zend_Controller_Action {
 			}
     	}
 
+
     	// init Game
-    	$this->game = new Model_Game();
+    	$this->game = new Model_Game(false);
+    	$this->game->reset();
     	$this->game->start();
     }
 }

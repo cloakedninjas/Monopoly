@@ -65,9 +65,17 @@ class Model_Game {
 
 	protected $properties = array();
 
-	public function __construct() {
+	public function __construct($load_state=true) {
 		$this->board = new Model_Board();
-		$this->loadState();
+
+		if ($load_state) {
+			$this->loadState();
+		}
+	}
+
+	public function reset() {
+		file_put_contents($this->log_file, '');
+		file_put_contents($this->state_file, '');
 	}
 
 	/**
@@ -138,13 +146,6 @@ class Model_Game {
 		'trade', 'end_turn', 'quit'
 		 *
 		 */
-
-		if ($command == 'new_game') {
-			file_put_contents($this->log_file, '');
-			file_put_contents($this->state_file, '');
-			echo "DONE";
-			exit;
-		}
 
 		if ($this->commandIsValid($command, $player)) {
 

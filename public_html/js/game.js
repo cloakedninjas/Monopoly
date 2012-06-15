@@ -55,6 +55,11 @@ var Game = {
 	parseResponse: function(log) {
 		for(var i = 0; i < log.length; i++) {
 			var cmd = log[i].cmd;
+
+			if (log[i].params != null) {
+				var params = log[i].params.split(",");
+			}
+
 			switch (cmd) {
 				case "game_start":
 					break;
@@ -63,6 +68,12 @@ var Game = {
 					break;
 
 				case "roll_dice":
+					$(".dice1").text(params[1]);
+					$(".dice2").text(params[2]);
+					break;
+
+				case "player_landed_on":
+					$(".p" + params[0] + "_on").text(Board.names[params[1]]);
 					break;
 			}
 
