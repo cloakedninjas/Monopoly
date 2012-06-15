@@ -1,4 +1,6 @@
 var Board = {
+	starting_money: 1500,
+
 	names: ["Go", "Old Kent Road", "Community Chest", "Whitechapel Road", "Income Tax", "King's Cross Station", "Angel Islington", "Chance", "Euston Road", "Pentonville Road",
 	        "Jail", "Pall Mall", "Electric Company", "Whitehall", "Northumberland Avenue", "Marylebone Station", "Bow Street", "?", "Vine Street",
 	        "Free Parking", "Strand", "Chance", "Fleet Sreet", "Trafalgar Square", "Fenchurch Street", "Leicester Square", "Coventry Street", "Water Works", "Picaddily",

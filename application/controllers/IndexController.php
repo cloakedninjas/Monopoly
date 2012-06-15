@@ -19,5 +19,9 @@ class IndexController extends Zend_Controller_Action {
 				$session->player->player_num = $_REQUEST['player_num'];
 			}
     	}
+
+    	// init Game
+    	$this->game = new Model_Game();
+    	$this->game->start();
     }
 }

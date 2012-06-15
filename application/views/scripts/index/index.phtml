@@ -6,7 +6,7 @@ $config = Zend_Registry::get('config');
 <script type="text/javascript" src="/js/board_uk.js"></script>
 
 <script>
-//Game.init();
+Game.init();
 </script>
 
 <?php
@@ -15,17 +15,15 @@ $session = new Zend_Session_Namespace('game');
 <p>Player number: <input id="player_num" value="<?php echo $session->player->player_num; ?>" />
 
 
-<p><a href="javascript:Game.start();">Start</a></p>
+<p><a href="javascript:Game.sendCommand('roll_dice');">Roll Dice</a></p>
 
-<p><a href="javascript:Game.rollDice();">Roll Dice</a></p>
+<p><a href="javascript:Game.sendCommand('buy_property');">Buy Property</a></p>
 
-<p><a href="javascript:Game.buyProperty();">Buy Property</a></p>
+<p><a href="javascript:Game.sendCommand('use_goojf');">GOOJF</a></p>
 
-<p><a href="javascript:Game.useGOOJFCard();">GOOJF</a></p>
+<p><a href="javascript:Game.sendCommand('end_turn');">End Turn</a></p>
 
-<p><a href="javascript:Game.endTurn();">End Turn</a></p>
-
-<p><a href="javascript:Game.newGame();">New Game</a></p>
+<p><a href="javascript:Game.sendCommand('new_game');">New Game</a></p>
 
 <table class="info" border="1">
 	<tr>

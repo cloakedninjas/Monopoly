@@ -21,24 +21,48 @@ class AjaxController extends Zend_Controller_Action {
 		$this->player = $session->player;
     }
 
-    public function startAction() {
-    	$this->game->start();
-    }
-
     public function userCommandAction() {
     	$cmd = $this->_getParam("cmd");
     	$result = $this->game->issueCommand($cmd, $this->player->player_num);
 
+    	$output = array('success'=>true, 'log'=>array(), 'start_listen'=>false);
+
     	if ($result === false) {
-    		echo "command not good";
+    		$output['success'] = false;
     	}
     	else {
-    		var_dump($this->game->getLog());
+    		$output['log'] = $this->game->getLog($this->_getParam("log_index"));
     	}
+
+    	echo json_encode($output);
     }
 
-	protected function outputGameState() {
-		echo json_encode($this->game->getState());
+    public function gameListenAction() {
+    	$config = Zend_Registry::get('config');
+
+    	$start_time = time();
+    	$listen_time = intval($this->_getParam('timeout', $config->game->listen->default));
+
+    	if ($listen_time > $config->game->listen->maxtime) {
+    		$listen_time = $config->game->listen->maxtime;
+    	}
+
+    	$end_time = $start_time + $listen_time;
+
+    	$i = 0;
+    	while (time() < $end_time) {
+    		$i++;
+    		// do something - use memcache here to check status
+    		sleep(1);
+
+    		if ($i >= 5) {
+    			echo "AYE CARAMBA!";
+    			exit;
+    		}
+
+    	}
+
     }
+
 
 }

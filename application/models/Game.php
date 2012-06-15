@@ -66,9 +66,6 @@ class Model_Game {
 	protected $properties = array();
 
 	public function __construct() {
-		//$this->state = json_decode(file_get_contents($this->state_file));
-		//$this->log = json_decode(file_get_contents($this->log_file));
-
 		$this->board = new Model_Board();
 		$this->loadState();
 	}
@@ -363,8 +360,8 @@ class Model_Game {
 		$this->log[] = $log;
 	}
 
-	public function getLog() {
-		return $this->log;
+	public function getLog($from=0) {
+		return array_slice($this->log, $from);
 	}
 
 	protected function saveState() {
