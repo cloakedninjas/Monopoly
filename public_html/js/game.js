@@ -6,15 +6,34 @@ var Game = {
 	requestListen: false,
 
 	init: function() {
-		return;
-		// setup the starting state
-		$.ajax({
-			url : "/ajax/" + url,
-			dataType : "JSON",
-			data: params,
-			success : function (data) {
+		$(document).ready(function() {
+			// setup the starting state
+			$.ajax({
+				url : "/ajax/get-state",
+				dataType : "JSON",
+				success : function (data) {
+					Game.state = data;
 
+					// add tokens
+					for (var i = 0; i < Game.state.players.length; i++) {
+						$("#board").append("<div class=\"player " + Game.state.players[i].token + "\" data-player=\"" + i + "\">P" + i + "</div>");
+					}
+				}
+			});
+
+			// print board
+			var places = Board.names.length;
+
+			for(var i = 0; i < places; i++) {
+				var text = "<p class=\"name\">" + Board.names[i] + "</p>";
+
+				if (Board.purchasable[i]) {
+					text += "<p class=\"cost\">&pound;" + Board.costs[i] + "</p>";
+				}
+
+				$("#board .pos" + i).html(text);
 			}
+
 		});
 	},
 

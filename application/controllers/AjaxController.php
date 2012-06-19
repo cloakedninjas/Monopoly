@@ -21,6 +21,10 @@ class AjaxController extends Zend_Controller_Action {
 		$this->player = $session->player;
     }
 
+    public function getStateAction() {
+    	echo json_encode($this->game->getJsState());
+    }
+
     public function userCommandAction() {
     	$cmd = $this->_getParam("cmd");
     	$result = $this->game->issueCommand($cmd, $this->player->player_num);

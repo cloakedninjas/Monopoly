@@ -23,16 +23,70 @@ $session = new Zend_Session_Namespace('game');
 
 <p><a href="javascript:Game.sendCommand('end_turn');">End Turn</a></p>
 
-<table class="info" border="1">
-	<tr>
-		<th>Dice 1</th>
-		<th>Dice 2</th>
-	</tr>
-	<tr>
-		<td class="dice1">&nbsp;</td>
-		<td class="dice2"></td>
-	</tr>
-</table>
+
+<div id="board">
+	<span class="position corner pos0"></span>
+
+	<div class="side1">
+		<span class="position pos1"></span>
+		<span class="position pos2"></span>
+		<span class="position pos3"></span>
+		<span class="position pos4"></span>
+		<span class="position pos5"></span>
+		<span class="position pos6"></span>
+		<span class="position pos7"></span>
+		<span class="position pos8"></span>
+		<span class="position pos9"></span>
+	</div>
+
+	<span class="position corner pos10"></span>
+
+	<div class="side2">
+		<span class="position pos19"></span>
+		<span class="position pos18"></span>
+		<span class="position pos17"></span>
+		<span class="position pos16"></span>
+		<span class="position pos15"></span>
+		<span class="position pos14"></span>
+		<span class="position pos13"></span>
+		<span class="position pos12"></span>
+		<span class="position pos11"></span>
+	</div>
+
+	<span class="position corner pos20"></span>
+
+	<div class="side3">
+		<span class="position pos21"></span>
+		<span class="position pos22"></span>
+		<span class="position pos23"></span>
+		<span class="position pos24"></span>
+		<span class="position pos25"></span>
+		<span class="position pos26"></span>
+		<span class="position pos27"></span>
+		<span class="position pos28"></span>
+		<span class="position pos29"></span>
+	</div>
+
+	<span class="position corner pos30"></span>
+
+	<div class="side4">
+		<span class="position pos31"></span>
+		<span class="position pos32"></span>
+		<span class="position pos33"></span>
+		<span class="position pos34"></span>
+		<span class="position pos35"></span>
+		<span class="position pos36"></span>
+		<span class="position pos37"></span>
+		<span class="position pos38"></span>
+		<span class="position pos39"></span>
+	</div>
+
+</div>
+
+<div id="dice">
+	<span class="dice1">0</span>
+	<span class="dice2">0</span>
+</div>
 
 <table class="info" border="1">
 	<tr>

@@ -98,11 +98,13 @@ class Model_Game {
 
 		$this->players[] = new Model_Player();
 		$this->players[0]->id = 1;
-		$this->players[0]->name = "Fred";
+		$this->players[0]->name = 'Fred';
+		$this->players[0]->token = 'car';
 
 		$this->players[] = new Model_Player();
 		$this->players[1]->id = 2;
-		$this->players[1]->name = "John";
+		$this->players[1]->name = 'John';
+		$this->players[1]->token = 'shoe';
 
 		//$this->players[] = new Model_Player();
 		//$this->players[2]->id = 3;
@@ -363,6 +365,15 @@ class Model_Game {
 
 	public function getLog($from=0) {
 		return array_slice($this->log, $from);
+	}
+
+	public function getJsState() {
+		$state = new stdClass();
+		$state->players = $this->players;
+		$state->player_turn = $this->player_turn;
+		$state->properties = $this->properties;
+
+		return $state;
 	}
 
 	protected function saveState() {
