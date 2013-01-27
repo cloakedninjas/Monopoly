@@ -164,5 +164,8 @@ pip-log.txt
 # Mac crap
 .DS_Store
 
-/log.txt
-/game.txt
+.idea/*
+
+log.txt
+game.txt
+debug.txt
