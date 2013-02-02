@@ -137,3 +137,6 @@ body {
 	border: 1px red solid;
 }
 
+.clear {
+    clear: both;
+}

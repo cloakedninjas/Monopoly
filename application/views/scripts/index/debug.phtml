@@ -1,0 +1,62 @@
+<?php
+$config = Zend_Registry::get('config');
+$session = new Zend_Session_Namespace('game');
+$board = new Model_Board();
+
+?>
+
+<script type="text/javascript" src="/js/game.js"></script>
+<script type="text/javascript" src="/js/board_uk.js"></script>
+
+<script>
+Game.init();
+</script>
+
+<p>Player number: <span id="player_num"><?php echo $session->player->player_num; ?></span></p>
+
+<div class="actions">
+    <span><a href="javascript:Game.sendCommand('roll_dice');">Roll Dice</a></span>
+
+    <span><a href="javascript:Game.sendCommand('buy_property');">Buy Property</a></span>
+
+    <span><a href="javascript:Game.sendCommand('use_goojf');">GOOJF</a></span>
+
+    <span><a href="javascript:Game.sendCommand('end_turn');">End Turn</a></span>
+
+</div>
+
+<div class="clear"></div>
+
+<table class="debug">
+<?php
+
+echo '<tr><td></td>';
+for ($i = 0; $i < $this->game->getPlayersPlaying(); $i++) {
+    echo '<th class="player_' . $i . '">P' . $i . '</th>';
+}
+echo '<td style="width: 50px;"></td>';
+echo '<th>Owned By</th>';
+echo '<th>Houses / Hotel</th>';
+echo '</tr>';
+
+for ($i = 0; $i < Model_Game::MAX_POSITIONS; $i++) {
+    $group = $board->getColourGroup($i);
+    echo '<tr class="pos_' . $i . ' group_' . $group . '"><td>' . $board->getNameOf($i) . '</td>';
+
+    for ($j = 0; $j < $this->game->getPlayersPlaying(); $j++) {
+        echo '<td></td>';
+    }
+	echo '<td></td>';
+	echo '<td class="ob' . $i. '"></td>';
+	echo '<td class="hh' . $i. '"></td>';
+    echo '</tr>';
+}
+?>
+
+</table>
+
+<table class="cash">
+	<tr><th>Player</th><th>Money</th></tr>
+</table>
+
+<div class="clear"></div>

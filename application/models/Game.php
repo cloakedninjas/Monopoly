@@ -2,6 +2,7 @@
 class Model_Game {
 
 	const MAX_POSITIONS = 39;
+    const MAX_PLAYERS = 8;
 
 	const CARD_COMMUNITY_CHEST = 1;
 	const CARD_CHANCE = 2;
@@ -481,7 +482,7 @@ class Model_Game {
 	/**
 	 * Returns an array of player indexes
 	 */
-	public function getPlayersPlaying() {
+	public function getCurrentPlayersPlaying() {
 		$playing = array();
 		foreach ($this->players as $i=>$p) {
 			if ($p->playing) {
@@ -489,6 +490,10 @@ class Model_Game {
 			}
 		}
 		return $playing;
+	}
+
+	public function getPlayersPlaying() {
+		return $this->players_playing;
 	}
 
 	public function whoOwns($position) {

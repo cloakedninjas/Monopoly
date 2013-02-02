@@ -1,0 +1,51 @@
+.actions span {
+    float: left;
+    margin: 0 20px 20px 0;
+}
+table.debug {
+    float: left;
+}
+
+table.debug th {
+    padding: 2px 5px;
+}
+
+table.debug th, table.debug td {
+    border: 1px #000 solid;
+}
+
+.group_0 {
+    background: #8b4513;
+}
+
+.group_1 {
+    background: blue;
+}
+
+.group_2 {
+    background: #ff1493;
+}
+
+.group_3 {
+    background: #ff8c00;
+}
+
+.group_4 {
+    background: red;
+}
+
+.group_5 {
+    background: yellow;
+}
+
+.group_6 {
+    background: green;
+}
+
+.group_7 {
+    background: #00008b;
+}
+
+table.cash {
+    float: right;
+}

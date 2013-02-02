@@ -2,45 +2,51 @@
 class Model_Board {
 
 	const POSITION_GO = 0;
-	const POSITION_JAIL = 10;
-	const POSITION_FREE_PARKING = 20;
-	const POSITION_GO_TO_JAIL = 30;
-
-	const POSITION_OLD_KENT_ROAD = 1;
-	const POSITION_WHITECHAPEL_ROAD = 1;
-
+	const POSITION_BROWN1 = 1;
+	const POSITION_BROWN2 = 3;
 	const POSITION_INCOME_TAX = 4;
-	const POSITION_SUPER_TAX = 38;
-
 	const POSITION_STATION_1 = 5;
-	const POSITION_STATION_2 = 15;
-	const POSITION_STATION_3 = 25;
-	const POSITION_STATION_4 = 35;
-
-	const POSITION_ANGEL_INSLINGTON = 6;
-	const POSITION_EUSTON_ROAD = 8;
-	const POSITION_PENTONVILLE_ROAD = 9;
-
-	const POSITION_PALL_MALL = 11;
-	const POSITION_WHITEHALL = 13;
-	const POSITION_NORTHUMBERLAND_AVE = 14;
-
-	const POSITION_ELECTRIC_COMPANY = 12;
-	const POSITION_WATER_WORKS = 28;
-
-	const POSITION_TRAFALGAR_SQUARE = 24;
-
-	const POSITION_MAYFAIR = 39;
-
+	const POSITION_BLUE1 = 6;
 	const POSITION_CHANCE_1 = 7;
+	const POSITION_BLUE2 = 8;
+	const POSITION_BLUE3 = 9;
+	const POSITION_JAIL = 10;
+	const POSITION_PINK1 = 11;
+	const POSITION_ELECTRIC_COMPANY = 12;
+	const POSITION_PINK2 = 13;
+	const POSITION_PINK3 = 14;
+	const POSITION_STATION_2 = 15;
+	const POSITION_ORANGE1 = 16;
+	const POSITION_ORANGE2 = 18;
+	const POSITION_ORANGE3 = 19;
+	const POSITION_FREE_PARKING = 20;
+	const POSITION_RED1 = 21;
 	const POSITION_CHANCE_2 = 22;
+	const POSITION_RED2 = 23;
+	const POSITION_RED3 = 24;
+	const POSITION_STATION_3 = 25;
+	const POSITION_YELLOW1 = 26;
+	const POSITION_YELLOW2 = 27;
+	const POSITION_WATER_WORKS = 28;
+	const POSITION_YELLOW3 = 29;
+	const POSITION_GO_TO_JAIL = 30;
+	const POSITION_GREEN1 = 31;
+	const POSITION_GREEN2 = 32;
+	const POSITION_GREEN3 = 34;
+	const POSITION_STATION_4 = 35;
 	const POSITION_CHANCE_3 = 36;
+	const POSITION_NAVY1 = 37;
+	const POSITION_SUPER_TAX = 38;
+	const POSITION_NAVY2 = 39;
 
 	const COL_GROUP_BROWN = 0;
 	const COL_GROUP_BLUE = 1;
 	const COL_GROUP_PINK = 2;
-	const COL_GROUP_ORANGE = 2;
-
+	const COL_GROUP_ORANGE = 3;
+	const COL_GROUP_RED = 4;
+	const COL_GROUP_YELLOW = 5;
+	const COL_GROUP_GREEN = 6;
+	const COL_GROUP_NAVY = 7;
 
 	private $names = array(
 		"Go", "Old Kent Road", "Community Chest", "Whitechapel Road", "Income Tax", "King's Cross Station", "Angel Islington", "Chance", "Euston Road", "Pentonville Road",
@@ -54,18 +60,42 @@ class Model_Board {
 
 	private $colour_groups = array(
 		self::COL_GROUP_BROWN => array(
-			self::POSITION_OLD_KENT_ROAD,
-			self::POSITION_WHITECHAPEL_ROAD
+			self::POSITION_BROWN1,
+			self::POSITION_BROWN2
 		),
 		self::COL_GROUP_BLUE => array (
-			self::POSITION_ANGEL_INSLINGTON,
-			self::POSITION_EUSTON_ROAD,
-			self::POSITION_PENTONVILLE_ROAD
+			self::POSITION_BLUE1,
+			self::POSITION_BLUE2,
+			self::POSITION_BLUE3
 		),
 		self::COL_GROUP_PINK => array (
-			self::POSITION_PALL_MALL,
-			self::POSITION_WHITEHALL,
-			self::POSITION_NORTHUMBERLAND_AVE
+			self::POSITION_PINK1,
+			self::POSITION_PINK2,
+			self::POSITION_PINK3
+		),
+		self::COL_GROUP_ORANGE => array (
+			self::POSITION_ORANGE1,
+			self::POSITION_ORANGE2,
+			self::POSITION_ORANGE3
+		),
+		self::COL_GROUP_RED => array (
+			self::POSITION_RED1,
+			self::POSITION_RED2,
+			self::POSITION_RED3
+		),
+		self::COL_GROUP_YELLOW => array (
+			self::POSITION_YELLOW1,
+			self::POSITION_YELLOW2,
+			self::POSITION_YELLOW3
+		),
+		self::COL_GROUP_GREEN => array (
+			self::POSITION_GREEN1,
+			self::POSITION_GREEN2,
+			self::POSITION_GREEN3
+		),
+		self::COL_GROUP_NAVY => array (
+			self::POSITION_NAVY1,
+			self::POSITION_NAVY2
 		)
 	);
 
@@ -132,6 +162,10 @@ class Model_Board {
 
 	public function isChance($pos) {
 		return in_array($pos, $this->chance_positions);
+	}
+
+	public function getNameOf($position) {
+		return $this->names[$position];
 	}
 
 	public function getPriceOf($position) {
@@ -301,7 +335,7 @@ class Model_Board {
 
 				case 14:
 					//You have been elected chairman of the board – pay each player $50
-					$players = $game->getPlayersPlaying();
+					$players = $game->getCurrentPlayersPlaying();
 
 					foreach ($players as $p) {
 						if ($p != $player) {
@@ -351,7 +385,7 @@ class Model_Board {
 
 				case 5:
 					//It is your birthday - Collect $10 from each player
-					$players = $game->getPlayersPlaying();
+					$players = $game->getCurrentPlayersPlaying();
 
 					foreach ($players as $p) {
 						if ($p != $player) {
@@ -363,7 +397,7 @@ class Model_Board {
 
 				case 6:
 					//Grand Opera Night – collect $50 from every player for opening night seats
-					$players = $game->getPlayersPlaying();
+					$players = $game->getCurrentPlayersPlaying();
 
 					foreach ($players as $p) {
 						if ($p != $player) {
