@@ -5,13 +5,6 @@ $board = new Model_Board();
 
 ?>
 
-<script type="text/javascript" src="/js/game.js"></script>
-<script type="text/javascript" src="/js/board_uk.js"></script>
-
-<script>
-Game.init();
-</script>
-
 <p>Player number: <span id="player_num"><?php echo $session->player->player_num; ?></span></p>
 
 <div class="actions">
@@ -27,7 +20,7 @@ Game.init();
 
 <div class="clear"></div>
 
-<table class="debug">
+<table class="board">
 <?php
 
 echo '<tr><td></td>';
@@ -55,8 +48,29 @@ for ($i = 0; $i < Model_Game::MAX_POSITIONS; $i++) {
 
 </table>
 
-<table class="cash">
-	<tr><th>Player</th><th>Money</th></tr>
+<table class="info">
+	<tr>
+		<th>Player</th>
+		<th>Turn</th>
+		<th>Money</th>
+        <th>GOoJFC</th>
+	</tr>
+	<?php
+	for ($i = 0; $i < $this->game->getPlayersPlaying(); $i++) {
+		echo '<tr><td>' . $i . '</td>';
+		echo '<td class="turn_' . $i . '">';
+		if ($i == 0) {
+			echo '&bull;';
+		}
+		echo '</td>';
+		echo '<td class="money_' . $i . '">' . $this->game->getPlayer($i)->cash . '</td>';
+		echo '<td></td></tr>';
+	}
+	?>
 </table>
 
 <div class="clear"></div>
+
+<script type="text/javascript">
+    Game.init();
+</script>

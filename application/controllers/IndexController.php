@@ -28,7 +28,10 @@ class IndexController extends Zend_Controller_Action {
 			}
     	}
 
+		$this->view->headScript()->appendFile('/js/game.js');
+
         if ($this->_getParam('debug')) {
+			$this->view->headScript()->appendFile('/js/renderer/debug.js');
             $this->view->headLink()->appendStylesheet('/css/debug.css');
             $this->renderScript('index/debug.phtml');
         }

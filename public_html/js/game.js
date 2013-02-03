@@ -1,11 +1,14 @@
 var Game = {
 
+    renderer: null,
 	state: {},
 	me: 0,
 	logIndex: 0,
 	requestListen: false,
 
 	init: function() {
+        this.renderer = new Renderer();
+
 		$(document).ready(function() {
 			// setup the starting state
 			$.ajax({

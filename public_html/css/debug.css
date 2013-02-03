@@ -2,15 +2,15 @@
     float: left;
     margin: 0 20px 20px 0;
 }
-table.debug {
+table.board {
     float: left;
 }
 
-table.debug th {
+table.board th {
     padding: 2px 5px;
 }
 
-table.debug th, table.debug td {
+table.board th, table.board td {
     border: 1px #000 solid;
 }
 
@@ -46,6 +46,19 @@ table.debug th, table.debug td {
     background: #00008b;
 }
 
-table.cash {
-    float: right;
+table.info {
+    float: left;
+    margin: 0 0 0 20px;
+}
+
+table.info th, table.info td {
+    border: 1px #000 solid;
+}
+
+table.info th {
+    padding: 2px 5px;
+}
+
+table.info td {
+    text-align: center;
 }
