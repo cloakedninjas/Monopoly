@@ -1,65 +1,46 @@
 var Game = {
 
-    renderer: null,
+	LOG_ERROR: 1,
+	LOG_INFO: 2,
+	LOG_DEBUG: 3,
+
+	debug_mode: false,
+	renderer: null,
 	state: {},
-	me: 0,
-	logIndex: 0,
-	requestListen: false,
+	log_index: 0,
+	listen_in_progress: false,
 
-	init: function() {
-        this.renderer = new Renderer();
+	init: function () {
+		if (typeof Renderer == 'undefined') {
+			this.log('No renderer is defined', this.LOG_ERROR);
+		}
+		this.renderer = new Renderer();
+		this.getGameState();
+	},
 
-		$(document).ready(function() {
-			// setup the starting state
-			$.ajax({
-				url : "/ajax/get-state",
-				dataType : "JSON",
-				success : function (data) {
-					Game.state = data;
-
-					// add tokens
-					for (var i = 0; i < Game.state.players.length; i++) {
-						$("#board").append("<div class=\"player " + Game.state.players[i].token + "\" data-player=\"" + i + "\">P" + i + "</div>");
-					}
-				}
-			});
-
-			// print board
-			var places = Board.names.length;
-
-			for(var i = 0; i < places; i++) {
-				var text = "<p class=\"name\">" + Board.names[i] + "</p>";
-
-				if (Board.purchasable[i]) {
-					text += "<p class=\"cost\">&pound;" + Board.costs[i] + "</p>";
-				}
-
-				$("#board .pos" + i).html(text);
-			}
-
-		});
+	getGameState: function() {
+		this.makeRequest("get-game-state");
 	},
 
 	sendCommand: function(cmd) {
 		this.makeRequest("user-command", {cmd: cmd});
 	},
 
-	makeRequest: function(url, params) {
-		if (params != null) {
-			params.log_index = this.logIndex;
+	makeRequest: function(request, params) {
+		if (params == null) {
+			params = {};
 		}
+		params.log_index = this.log_index;
 
 		$.ajax({
-			url : "/ajax/" + url,
+			url : "/ajax/" + request,
 			dataType : "JSON",
 			data: params,
 			success : function (data) {
-				//console.log(data);
-
 				if (data != null) {
 					if (data.success) {
-						Game.logIndex += data.log.length;
-						Game.parseResponse(data.log);
+						Game.log_index = data.new_log_index;
+						Game.parseResponse(request, data.state);
 
 						// begin long poll if response tells us to
 						if (data.start_listen) {
@@ -69,62 +50,62 @@ var Game = {
 				}
 			},
 			error: function(a,b,c) {
-				$("#debug").html(c);
+				console.log(c);
 			}
 		});
 	},
 
-	parseResponse: function(log) {
-		for(var i = 0; i < log.length; i++) {
-			var cmd = log[i].cmd;
-
-			if (log[i].params != null) {
-				var params = log[i].params.split(",");
-			}
-
-			switch (cmd) {
-				case "game_start":
-					break;
-
-				case "player_to_start":
-					break;
-
-				case "roll_dice":
-					$(".dice1").text(params[1]);
-					$(".dice2").text(params[2]);
-					break;
-
-				case "player_landed_on":
-					$(".p" + params[0] + "_on").text(Board.names[params[1]]);
-					break;
-			}
-
-			$("#debug").append("<p>" + cmd + "</p>");
+	parseResponse: function(request, data) {
+		if (request == 'get-game-state') {
+			this.renderer.renderGameState(data);
 		}
+		else {
+			this.renderer.renderAction(request, actions);
+		}
+
+
+		// append to log?
+		// set game state?
 	},
 
 	beginListen: function() {
-		if (this.requestListen) {
-			// already listening
+		if (this.listen_in_progress) {
 			return false;
 		}
-		this.requestListen = true;
+		this.listen_in_progress = true;
 
 		$.ajax({
 			url : "/ajax/game-listen",
 			dataType : "JSON",
 			data: {timeout: 30},
 			success : function (data) {
-				Game.requestListen = false;
+				Game.listen_in_progress = false;
 				console.log(data);
 
 				// do we listen again?
 			},
 			error: function(a,b,c) {
-				Game.requestListen = false;
+				Game.listen_in_progress = false;
 			}
 		});
+	},
+
+	setDebugMode: function(mode) {
+		this.debug_mode = mode;
+	},
+
+	log: function(msg, severity) {
+		if (typeof console == 'undefined') {
+			return false;
+		}
+		if (severity == this.LOG_ERROR) {
+			console.error(msg);
+		}
+		else if (severity == this.LOG_DEBUG && this.debug_mode) {
+			console.info(msg);
+		}
+		else {
+			console.log(msg);
+		}
 	}
-
-
 };

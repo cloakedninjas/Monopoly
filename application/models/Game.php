@@ -381,6 +381,10 @@ class Model_Game {
 		return array_slice($this->log, $from);
 	}
 
+	public function getLogIndex() {
+		return count($this->log) - 1;
+	}
+
 	public function getJsState() {
 		$state = new stdClass();
 		$state->players = $this->players;

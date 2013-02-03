@@ -51,6 +51,7 @@ for ($i = 0; $i < Model_Game::MAX_POSITIONS; $i++) {
 <table class="info">
 	<tr>
 		<th>Player</th>
+        <th>Name</th>
 		<th>Turn</th>
 		<th>Money</th>
         <th>GOoJFC</th>
@@ -58,13 +59,10 @@ for ($i = 0; $i < Model_Game::MAX_POSITIONS; $i++) {
 	<?php
 	for ($i = 0; $i < $this->game->getPlayersPlaying(); $i++) {
 		echo '<tr><td>' . $i . '</td>';
-		echo '<td class="turn_' . $i . '">';
-		if ($i == 0) {
-			echo '&bull;';
-		}
-		echo '</td>';
-		echo '<td class="money_' . $i . '">' . $this->game->getPlayer($i)->cash . '</td>';
-		echo '<td></td></tr>';
+		echo '<td>' . $this->game->getPlayer($i)->name . '</td>';
+		echo '<td class="player_turn turn_' . $i . '"></td>';
+		echo '<td class="money_' . $i . '"></td>';
+		echo '<td class="goojf_' . $i . '"></td></tr>';
 	}
 	?>
 </table>
