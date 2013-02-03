@@ -37,7 +37,7 @@ for ($i = 0; $i < Model_Game::MAX_POSITIONS; $i++) {
     echo '<tr class="pos_' . $i . ' group_' . $group . '"><td>' . $board->getNameOf($i) . '</td>';
 
     for ($j = 0; $j < $this->game->getPlayersPlaying(); $j++) {
-        echo '<td></td>';
+        echo '<td class="player_' . $j. '"></td>';
     }
 	echo '<td></td>';
 	echo '<td class="ob' . $i. '"></td>';

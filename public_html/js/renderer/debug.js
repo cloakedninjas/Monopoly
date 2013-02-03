@@ -21,7 +21,10 @@ function Renderer() {
 			$('table.info td.goojf_' + i).text(state.players[i].goojf_count);
 		}
 
-
+		for (var i = 0; i < state.properties.length; i++) {
+			//$('table.info td.money_' + i).text(state.players[i].cash);
+			//$('table.info td.goojf_' + i).text(state.players[i].goojf_count);
+		}
 
 
 
