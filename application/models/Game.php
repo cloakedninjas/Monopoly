@@ -21,10 +21,9 @@ class Model_Game {
 
 	// action log
 	protected $log = array();
-	protected $log_file = "C:/wamp/www/monopoly/log.txt";
-	protected $state_file = "C:/wamp/www/monopoly/game.txt";
-    protected $debug_file = "C:/wamp/www/monopoly/debug.txt";
-
+	protected $log_file;
+	protected $state_file;
+	protected $debug_file;
 
 	protected $valid_commands = array(
 		'start_game',
@@ -71,6 +70,10 @@ class Model_Game {
 	protected $properties = array();
 
 	public function __construct($load_state=true) {
+		$this->log_file = APPLICATION_PATH . '/../log.txt';
+		$this->state_file = APPLICATION_PATH . '/../game.txt';
+		$this->debug_file = APPLICATION_PATH . '/../debug.txt';
+		
 		$this->board = new Model_Board();
 
 		if ($load_state) {
