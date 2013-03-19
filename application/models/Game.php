@@ -1,7 +1,7 @@
 <?php
 class Model_Game {
 
-	const MAX_POSITIONS = 39;
+	const MAX_POSITIONS = 40;
     const MAX_PLAYERS = 8;
 
 	const CARD_COMMUNITY_CHEST = 1;

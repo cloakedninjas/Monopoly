@@ -16,10 +16,11 @@ table.board th, table.board td {
 
 .group_0 {
     background: #8b4513;
+	color: #fff;
 }
 
 .group_1 {
-    background: blue;
+    background: lightblue;
 }
 
 .group_2 {
@@ -43,7 +44,13 @@ table.board th, table.board td {
 }
 
 .group_7 {
-    background: #00008b;
+    background: navy;
+	color: #fff;
+}
+
+.group_8 {
+    background: #333;
+	color: #fff;
 }
 
 table.info {

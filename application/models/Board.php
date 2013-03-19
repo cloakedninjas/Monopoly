@@ -47,6 +47,7 @@ class Model_Board {
 	const COL_GROUP_YELLOW = 5;
 	const COL_GROUP_GREEN = 6;
 	const COL_GROUP_NAVY = 7;
+	const COL_GROUP_STATION = 8;
 
 	private $names = array(
 		"Go", "Old Kent Road", "Community Chest", "Whitechapel Road", "Income Tax", "King's Cross Station", "Angel Islington", "Chance", "Euston Road", "Pentonville Road",
@@ -96,6 +97,13 @@ class Model_Board {
 		self::COL_GROUP_NAVY => array (
 			self::POSITION_NAVY1,
 			self::POSITION_NAVY2
+		),
+		
+		self::COL_GROUP_STATION => array (
+			self::POSITION_STATION_1,
+			self::POSITION_STATION_2,
+			self::POSITION_STATION_3,
+			self::POSITION_STATION_4
 		)
 	);
 
